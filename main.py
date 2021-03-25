@@ -23,11 +23,11 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/")
+@app.get("/startMatlab")
 def start_matlab():
     matlab = MatlabInterface()
-    matlab.run_script()
-    return {"result: "}
+    matlab.run_script('checkStart')
+    return {"FIN SCRIPT CHECKSTART"}
 
 
 @app.get("/items/{item_id}")
