@@ -8,6 +8,8 @@ from matlab_interface import MatlabInterface
 
 app = FastAPI()
 
+matlab = MatlabInterface()
+
 
 class Item(BaseModel):
 
@@ -23,11 +25,17 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/startMatlab")
-def start_matlab():
-    matlab = MatlabInterface()
-    matlab.run_script('checkStart')
-    return {"FIN SCRIPT CHECKSTART"}
+@app.get("/checkMatlab")
+def check_matlab():
+    return {matlab.run_script('checkStart')}
+
+
+@app.get("/stopMatlab")
+def stop_matlab():
+    if matlab is not None:
+        return {matlab.stop()}
+    else:
+        return {"already stopped"}
 
 
 @app.get("/items/{item_id}")

@@ -11,7 +11,7 @@ import os
 from io import StringIO
 
 global import_fail
-try: # Check if the Matlab Engine is installed
+try:  # Check if the Matlab Engine is installed
     import matlab.engine
     from matlab.engine import RejectedExecutionError as MatlabTerminated
 except ImportError:
@@ -19,6 +19,7 @@ except ImportError:
     import_fail = True
 else:
     import_fail = False
+
 
 class MatlabInterface:
     global import_fail
@@ -36,6 +37,11 @@ class MatlabInterface:
         else:
             print("Could not start Matlab")
 
+    def stop(self):
+        print("stopping Matlab...")
+        self.eng.quit()
+        return "stopped OK"
+
     def clear(self):
         os.system(self.cls_str)
 
@@ -45,21 +51,22 @@ class MatlabInterface:
                 print("Running: \"{}\"".format(script_path))
                 stream = StringIO()
                 err_stream = StringIO()
-                self.eng.run(script_path, nargout=0, stdout=stream, stderr=err_stream)
-                print(stream.getvalue())
+                self.eng.run(script_path, nargout=0,
+                             stdout=stream, stderr=err_stream)
+                return stream.getvalue()
             except MatlabTerminated:
                 print(stream.getvalue(), err_stream.getvalue(), sep="\n")
                 print("Matlab terminated. Restarting the engine...")
                 self.eng = matlab.engine.start_matlab()
-                print("Matlab restarted")
-            except : # The other exceptions are handled by Matlab
+                return "Matlab restarted OK"
+            except:  # The other exceptions are handled by Matlab
                 print(stream.getvalue(), err_stream.getvalue(), sep="\n")
 
     def run_selection(self, temp_path):
         if not import_fail:
             f = open(temp_path, 'r')
             print("Running:")
-            try: # Print the content of the selection before running it, encoding issues can happen
+            try:  # Print the content of the selection before running it, encoding issues can happen
                 for line in f:
                     print(line, end='')
             except UnicodeDecodeError:
@@ -69,39 +76,43 @@ class MatlabInterface:
             try:
                 stream = StringIO()
                 err_stream = StringIO()
-                self.eng.run(temp_path, nargout=0, stdout=stream, stderr=err_stream)
+                self.eng.run(temp_path, nargout=0,
+                             stdout=stream, stderr=err_stream)
                 print(stream.getvalue())
             except MatlabTerminated:
                 print(stream.getvalue(), err_stream.getvalue(), sep="\n")
                 print("Matlab terminated. Restarting the engine...")
                 self.eng = matlab.engine.start_matlab()
                 print("Matlab restarted")
-            except : # The other exceptions are handled by Matlab
+            except:  # The other exceptions are handled by Matlab
                 print(stream.getvalue(), err_stream.getvalue(), sep="\n")
             finally:
                 os.remove(temp_path)
                 os.rmdir(os.path.dirname(temp_path))
 
     def interactive_loop(self):
-        loop=True # Looping allows for an interactive terminal
+        loop = True  # Looping allows for an interactive terminal
         while loop and not import_fail:
             print('>> ', end='')
             command = input()
-            if command=="exit" or command=="exit()": # Keywords to leave the engine
-                loop=False
-            elif command=="clc": # matlab terminal clearing must be reimplemented
+            if command == "exit" or command == "exit()":  # Keywords to leave the engine
+                loop = False
+            elif command == "clc":  # matlab terminal clearing must be reimplemented
                 self.clear()
             else:
                 try:
                     stream = StringIO()
                     err_stream = StringIO()
-                    self.eng.eval(command, nargout=0, stdout=stream, stderr=err_stream) # Feed the instructions to Matlab eval
+                    # Feed the instructions to Matlab eval
+                    self.eng.eval(command, nargout=0,
+                                  stdout=stream, stderr=err_stream)
                     print(stream.getvalue())
                 except MatlabTerminated:
                     print(stream.getvalue(), err_stream.getvalue(), sep="\n")
                     print("Matlab terminated. Restarting the engine...")
                     self.eng = matlab.engine.start_matlab()
                     print("Matlab restarted")
-                except : # The other exceptions are handled by Matlab
+                except:  # The other exceptions are handled by Matlab
                     print(stream.getvalue(), err_stream.getvalue(), sep="\n")
-        if not import_fail: self.eng.quit()
+        if not import_fail:
+            self.eng.quit()

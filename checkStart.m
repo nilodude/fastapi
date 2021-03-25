@@ -1,1 +1,1 @@
-start = 'ok'
+fprintf('ok');
