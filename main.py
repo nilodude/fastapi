@@ -40,8 +40,12 @@ def stop_matlab():
 
 @app.post("/runCommand")
 def run_command(runcommand: RunCommand):
-    return {"result": matlab.run_script(runcommand.commands)}
+    return {"result": matlab.run_command(runcommand.commands)}
 
+
+@app.post("/runScript")
+def run_script(runcommand: RunCommand):
+    return {"result": matlab.run_script(runcommand.commands)}
 
 # @app.get("/items/{item_id}")
 # def read_item(item_id: int, q: Optional[str] = None):
