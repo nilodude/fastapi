@@ -11,13 +11,13 @@ app = FastAPI()
 matlab = MatlabInterface()
 
 
-class Item(BaseModel):
+class RunCommand(BaseModel):
 
-    name: str
+    commands: str
 
-    price: float
+    # args: list
 
-    is_offer: Optional[bool] = None
+    # is_offer: Optional[bool] = None
 
 
 @app.get("/")
@@ -38,12 +38,17 @@ def stop_matlab():
         return {"already stopped"}
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Optional[str] = None):
-    return {"item_id": item_id, "q": q}
+@app.post("/runCommand")
+def run_command(runcommand: RunCommand):
+    return {"result": matlab.run_script(runcommand.commands)}
 
 
-@app.put("/items/{item_id}")
-def update_item(item_id: int, item: Item):
+# @app.get("/items/{item_id}")
+# def read_item(item_id: int, q: Optional[str] = None):
+#     return {"item_id": item_id, "q": q}
 
-    return {"item_name": item.name, "item_id": item_id}
+
+# @app.put("/items/{item_id}")
+# def update_item(item_id: int, item: Item):
+
+#     return {"item_name": item.name, "item_id": item_id}

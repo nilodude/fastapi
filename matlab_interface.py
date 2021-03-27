@@ -46,21 +46,25 @@ class MatlabInterface:
         os.system(self.cls_str)
 
     def run_script(self, script_path):
+        import json
         if not import_fail:
             try:
                 print("Running: \"{}\"".format(script_path))
                 stream = StringIO()
                 err_stream = StringIO()
-                self.eng.run(script_path, nargout=0,
-                             stdout=stream, stderr=err_stream)
-                return stream.getvalue()
+                self.eng.eval(script_path, nargout=0,
+                              stdout=stream, stderr=err_stream)
+                return stream.getvalue().replace('\n', '')
             except MatlabTerminated:
                 print(stream.getvalue(), err_stream.getvalue(), sep="\n")
                 print("Matlab terminated. Restarting the engine...")
                 self.eng = matlab.engine.start_matlab()
                 return "Matlab restarted OK"
             except:  # The other exceptions are handled by Matlab
-                print(stream.getvalue(), err_stream.getvalue(), sep="\n")
+                # return (stream.getvalue() + "\n" + err_stream.getvalue() + "\n")
+                errList = err_stream.getvalue().split('\n\n')
+                newList = [error.replace('\n', '') for error in errList]
+                return list(filter(None, newList))
 
     def run_selection(self, temp_path):
         if not import_fail:
