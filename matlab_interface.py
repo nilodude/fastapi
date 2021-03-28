@@ -46,7 +46,6 @@ class MatlabInterface:
         os.system(self.cls_str)
 
     def run_script(self, script_path):
-        import json
         if not import_fail:
             try:
                 print("Running: \"{}\"".format(script_path))
@@ -61,13 +60,11 @@ class MatlabInterface:
                 self.eng = matlab.engine.start_matlab()
                 return "Matlab restarted OK"
             except:  # The other exceptions are handled by Matlab
-                # return (stream.getvalue() + "\n" + err_stream.getvalue() + "\n")
                 errList = err_stream.getvalue().split('\n\n')
                 newList = [error.replace('\n', '') for error in errList]
                 return list(filter(None, newList))
 
     def run_command(self, script_path):
-        import json
         if not import_fail:
             try:
                 print("Running: \"{}\"".format(script_path))

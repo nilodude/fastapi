@@ -9,6 +9,7 @@ from matlab_interface import MatlabInterface
 app = FastAPI()
 
 matlab = MatlabInterface()
+matlab.run_script('checkStart')
 
 
 class RunCommand(BaseModel):
@@ -27,7 +28,7 @@ def read_root():
 
 @app.get("/checkMatlab")
 def check_matlab():
-    return {matlab.run_script('checkStart')}
+    return {"result": matlab.run_script('D:\\Dropbox\\666\\fastapi\\checkStart')}
 
 
 @app.get("/stopMatlab")
@@ -45,7 +46,14 @@ def run_command(runcommand: RunCommand):
 
 @app.post("/runScript")
 def run_script(runcommand: RunCommand):
-    return {"result": matlab.run_script(runcommand.commands)}
+    import json
+    return {"result": json.loads(matlab.run_script(runcommand.commands))}
+
+
+@app.post("/addTracks")
+def run_script():
+    import json
+    return {"result": json.loads(matlab.run_script('justAddTracks'))}
 
 # @app.get("/items/{item_id}")
 # def read_item(item_id: int, q: Optional[str] = None):
