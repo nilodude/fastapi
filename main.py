@@ -14,11 +14,11 @@ matlab.run_script('checkStart')
 
 class RunCommand(BaseModel):
 
-    commands: str
+    command: str
 
     # args: list
 
-    # is_offer: Optional[bool] = None
+    jsonResponse: Optional[bool] = False
 
 
 @app.get("/")
@@ -47,7 +47,12 @@ def run_command(runcommand: RunCommand):
 @app.post("/runScript")
 def run_script(runcommand: RunCommand):
     import json
-    return {"result": json.loads(matlab.run_script(runcommand.commands))}
+    res = matlab.run_script(runcommand.commands)
+    if(runcommand.jsonResponse):
+        result = json.loads(res)
+    else:
+        result = res
+    return {"result": result}
 
 
 @app.post("/addTracks")
@@ -59,10 +64,9 @@ def add_tracks():
 @app.post("/test_shazam")
 def test_shazam(duration: Optional[int] = 3, wipe: Optional[bool] = False):
     import json
-    command = "test_shazam {} {}".format(duration, wipe)
+    command = "test_shazam {} {}".format(duration, int(wipe))
     if wipe:
         print('Wipe selected. Adding tracks...')
-    print(command)
     result = matlab.run_command(command)
     print(result)
     print(json.loads(result))
