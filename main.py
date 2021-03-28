@@ -51,9 +51,22 @@ def run_script(runcommand: RunCommand):
 
 
 @app.post("/addTracks")
-def run_script():
+def add_tracks():
     import json
     return {"result": json.loads(matlab.run_script('justAddTracks'))}
+
+
+@app.post("/test_shazam")
+def test_shazam(duration: Optional[int] = 3, wipe: Optional[bool] = False):
+    import json
+    command = "test_shazam {} {}".format(duration, wipe)
+    if wipe:
+        print('Wipe selected. Adding tracks...')
+    print(command)
+    result = matlab.run_command(command)
+    print(result)
+    print(json.loads(result))
+    return {"result": json.loads(result)}
 
 # @app.get("/items/{item_id}")
 # def read_item(item_id: int, q: Optional[str] = None):
