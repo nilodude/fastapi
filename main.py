@@ -12,7 +12,7 @@ matlab = MatlabInterface()
 matlab.run_script('checkStart')
 
 
-class RunCommand(BaseModel):
+class Run(BaseModel):
 
     command: str
 
@@ -40,25 +40,43 @@ def stop_matlab():
 
 
 @app.post("/runCommand")
-def run_command(runcommand: RunCommand):
-    return {"result": matlab.run_command(runcommand.commands)}
-
-
-@app.post("/runScript")
-def run_script(runcommand: RunCommand):
+def run_command(run: Run):
     import json
-    res = matlab.run_script(runcommand.commands)
-    if(runcommand.jsonResponse):
+    res = matlab.run_command(run.command)
+    print(res)
+    if(run.jsonResponse):
         result = json.loads(res)
     else:
         result = res
     return {"result": result}
 
 
+@app.post("/runScript")
+def run_script(run: Run):
+    import json
+    res = matlab.run_script(run.command)
+    if(run.jsonResponse):
+        result = json.loads(res)
+    else:
+        result = res
+    return {"result": result}
+
+
+@app.post("/getJSON")
+def getJSON(run: Run):
+    import json
+    with open('D:\\Dropbox\\666\\Shazam-MATLAB\\app\\db\\json\\'+run.command, 'r') as f:
+        res = f.read()
+    print(res)
+    return {"result": json.loads(res, strict=False)}
+
+
 @app.post("/addTracks")
 def add_tracks():
     import json
-    return {"result": json.loads(matlab.run_script('justAddTracks'))}
+    res = matlab.run_script('justAddTracks')
+    print(res)
+    return {"result": json.loads(res)}
 
 
 @app.post("/test_shazam")
