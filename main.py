@@ -9,50 +9,52 @@ import json
 import os
 import os.path
 
+MAX_SESSIONS = 3
 app = FastAPI()
 service = Service()
-session1 = Session()
-session2 = Session()
+sessions = [Session(i) for i in range(1, MAX_SESSIONS+1)]
+
 # TODO: must check matlab instances running before instancing new one
 # TODO: then once new instance running, save PID for identifying with python "session"
 # TODO: to identify your own matlab session,
 # matlab PID from python command must match matlab PID from matlab command
 
 
-@app.get("/newSession1")
-def newSession1():
-    # session1 = Session()
-    session1.matlab = MatlabInterface()
-    session1.matlab.run_script('checkStart')
+@app.get("/newSession")
+def newSession():
+    availables = list(filter(lambda x: x.pid is None, sessions))
+    service.printS('Available Sessions:', availables)
+    itsNotFull = len(availables) > 0
+    if itsNotFull:
+        s = availables[0]
+        index = sessions.index(s)
+        sessions.pop(index)
+        print('Starting Session '+str(s.sid))
+        s.matlab = MatlabInterface()
+        s.matlab.run_script('checkStart')
 
-    tasks = service.taskList()
+        tasks = service.taskList()
 
-    if len(tasks) > 1:
-        tasks.sort(key=lambda x: x.cpuTime, reverse=False)
+        s.pid = tasks[0].pid
+        s.matlabPID = s.matlab.run_command("feature('getpid')")
+        message = 'New Matlab process with PID='+s.pid
+        sessions.insert(index, s)
 
-    session1.pid = tasks[0].pid
+        service.printS('Updated Sessions: '+message, sessions)
+        response = {"result": message, "session": {
+            "pid": s.pid, "sid": s.sid, "matlabPID": s.matlabPID}}
+    else:
+        message = 'No empty sessions available'
+        response = {"result": message}
 
-    print('New Matlab process with PID: '+session1.pid)
-    # print(response)
-    return session1.pid
+    print(response)
+
+    return response
 
 
-@app.get("/newSession2")
-def newSession2():
-    # session2 = Session()
-    session2.matlab = MatlabInterface()
-    session2.matlab.run_script('checkStart')
-
-    tasks = service.taskList()
-
-    if len(tasks) > 1:
-        tasks.sort(key=lambda x: x.cpuTime, reverse=False)
-
-    session2.pid = tasks[0].pid
-
-    print('New Matlab process with PID: '+session2.pid)
-    # print(response)
-    return session2.pid
+@app.get("/sessions")
+def getSessions():
+    return [{"pid": s.pid, "sid": s.sid, "matlabPID": s.matlabPID if s.matlabPID is not None else ""} for s in sessions]
 
 
 @app.get("/startMatlab")

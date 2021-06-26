@@ -15,7 +15,17 @@ class Service:
             output = output.decode('utf-8')
             taskList = list(filter(None, output.split('\r\n')))
             tasks = [Task(task) for task in taskList]
-            response = [json.loads(json.dumps(task.__dict__))
-                        for task in tasks]
-            print(response)
+
+            if len(tasks) > 1:
+                tasks.sort(key=lambda x: x.cpuTime, reverse=False)
+            # print(self.toJSON(tasks))
         return tasks
+
+    def printS(self, title, sessions):
+        print(title)
+        for s in sessions:
+            print(' ', vars(s))
+
+    def toJSON(self, input):
+        return [json.loads(json.dumps(vars(i)))
+                for i in input]
