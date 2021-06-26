@@ -1,6 +1,3 @@
-# Developed by Aurelien Pommel and other contributors
-
-# Trying to have a basic Python 2 compatibility
 from __future__ import print_function
 try:
     input = raw_input
@@ -34,6 +31,8 @@ class MatlabInterface:
         if not import_fail:
             print("Starting Matlab...")
             self.eng = matlab.engine.start_matlab()
+            # future = matlab.engine.start_matlab(background=True)
+            # self.eng = future.result()
         else:
             print("Could not start Matlab")
 
@@ -48,7 +47,7 @@ class MatlabInterface:
     def run_script(self, script_path):
         if not import_fail:
             try:
-                print("Running: \"{}\"".format(script_path))
+                print("Running: {}".format(script_path))
                 stream = StringIO()
                 err_stream = StringIO()
                 self.eng.run(script_path, nargout=0,
@@ -58,6 +57,8 @@ class MatlabInterface:
                 print(stream.getvalue(), err_stream.getvalue(), sep="\n")
                 print("Matlab terminated. Restarting the engine...")
                 self.eng = matlab.engine.start_matlab()
+                self.eng.eval('cd \'D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\\'', nargout=0,
+                              stdout=stream, stderr=err_stream)
                 return "Matlab restarted OK"
             except:  # The other exceptions are handled by Matlab
                 errList = err_stream.getvalue().split('\n\n')
@@ -67,7 +68,7 @@ class MatlabInterface:
     def run_command(self, script_path):
         if not import_fail:
             try:
-                print("Running: \"{}\"".format(script_path))
+                print("Running: {}".format(script_path))
                 stream = StringIO()
                 err_stream = StringIO()
                 self.eng.eval(script_path, nargout=0,
@@ -77,6 +78,8 @@ class MatlabInterface:
                 print(stream.getvalue(), err_stream.getvalue(), sep="\n")
                 print("Matlab terminated. Restarting the engine...")
                 self.eng = matlab.engine.start_matlab()
+                self.eng.eval('cd \'D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\\'', nargout=0,
+                              stdout=stream, stderr=err_stream)
                 return "Matlab restarted OK"
             except:  # The other exceptions are handled by Matlab
                 # return (stream.getvalue() + "\n" + err_stream.getvalue() + "\n")
