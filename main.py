@@ -22,14 +22,15 @@ sessions = [Session(i) for i in range(1, MAX_SESSIONS+1)]
 
 @app.get("/newSession")
 def newSession():
-    availables = list(filter(lambda x: x.pid is None, sessions))
-    service.printS('Available Sessions:', availables)
+    availables = list(filter(lambda s: s.pid is None, sessions))
     itsNotFull = len(availables) > 0
+
     if itsNotFull:
+        service.printS('Available Sessions:', availables)
         s = availables[0]
         index = sessions.index(s)
         sessions.pop(index)
-        print('Starting Session '+str(s.sid))
+        print('Initializing Matlab Session '+str(s.sid)+'...')
         s.matlab = MatlabInterface()
         s.matlab.run_script('checkStart')
 
@@ -41,29 +42,51 @@ def newSession():
         sessions.insert(index, s)
 
         service.printS('Updated Sessions: '+message, sessions)
-        response = {"result": message, "session": {
-            "pid": s.pid, "sid": s.sid, "matlabPID": s.matlabPID}}
+        response = {"result": message, "session": s.toJSON()}
     else:
-        message = 'No empty sessions available'
+        message = 'No available sessions'
         response = {"result": message}
-
-    print(response)
 
     return response
 
 
 @app.get("/sessions")
 def getSessions():
-    return [{"pid": s.pid, "sid": s.sid, "matlabPID": s.matlabPID if s.matlabPID is not None else ""} for s in sessions]
+    return {"sessions": [s.toJSON() for s in sessions]}
 
 
 @app.get("/startMatlab")
-def startMatlab():
-    if sesion is not None:
-        response = session.startMatlab()
+def startMatlab(sid: int):
+    response = None
+# s.pid is None and
+    availables = list(
+        filter(lambda s:  s.sid == sid, sessions))
+    isItAvailable = (len(availables) > 0) & (availables[0].pid is None)
+
+    if isItAvailable:
+        service.printS('Selected Session:', availables)
+        s = availables[0]
+        index = sessions.index(s)
+        sessions.pop(index)
+        print('Initializing Matlab Session '+str(sid)+'...')
+        s.matlab = MatlabInterface()
+        s.matlab.run_script('checkStart')
+
+        tasks = service.taskList()
+
+        s.pid = tasks[0].pid
+        s.matlabPID = s.matlab.run_command("feature('getpid')")
+        message = 'New Matlab process with PID='+s.pid
+        sessions.insert(index, s)
+
+        service.printS('Updated Sessions: '+message, sessions)
+        response = {"result": message, "session": s.toJSON()}
     else:
-        response = 'no session'
-    # print(response)
+        message = 'Session ' + \
+            str(sid)+' not available, already running PID=' + \
+            str(availables[0].pid)
+        response = {"result": message}
+
     return response
 
 

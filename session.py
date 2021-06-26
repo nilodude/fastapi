@@ -9,10 +9,13 @@ service = Service()
 
 
 class Session:
-    sid: int
+    sid = None
     matlab: MatlabInterface
     pid = None
-    matlabPID: int
+    matlabPID = None
 
     def __init__(self, sid):
         self.sid = sid
+
+    def toJSON(self):
+        return {"pid": self.pid, "sid": self.sid, "matlabPID": self.matlabPID}

@@ -27,5 +27,11 @@ class Service:
             print(' ', vars(s))
 
     def toJSON(self, input):
-        return [json.loads(json.dumps(vars(i)))
-                for i in input]
+        response = []
+        for s in input:
+            if not hasattr(s, 'matlab'):
+                response.append(json.loads(json.dumps(vars(s))))
+            else:
+                response.append({
+                    "pid": s.pid, "sid": s.sid, "matlabPID": s.matlabPID})
+        return response
