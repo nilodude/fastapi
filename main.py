@@ -9,15 +9,25 @@ from matlab_interface import MatlabInterface
 import json
 import os
 import os.path
+import subprocess
 
 app = FastAPI()
 
 # TODO: must check matlab instances running before instancing new one
-print(os.system('cmd /c "tasklist /FI "imagename eq matlab.exe" /fo table /nh"'))
+
 
 matlab = MatlabInterface()
 # TODO: then once new instance running, save PID for identifying with python "session"
 matlab.run_script('checkStart')
+
+
+@app.get("/taskList")
+def tasklist():
+    taskList = subprocess.check_output(
+        'tasklist /FI "imagename eq matlab.exe" /fo table /nh', shell=True)
+
+    print(taskList)
+    return {"result": taskList}
 
 
 @app.get("/")
