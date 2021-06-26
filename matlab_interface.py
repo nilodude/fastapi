@@ -73,7 +73,7 @@ class MatlabInterface:
                 err_stream = StringIO()
                 self.eng.eval(script_path, nargout=0,
                               stdout=stream, stderr=err_stream)
-                return stream.getvalue().replace('\n', '')
+                return stream.getvalue().replace('ans =', '').strip()
             except MatlabTerminated:
                 print(stream.getvalue(), err_stream.getvalue(), sep="\n")
                 print("Matlab terminated. Restarting the engine...")

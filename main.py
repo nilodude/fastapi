@@ -12,7 +12,11 @@ import os.path
 
 app = FastAPI()
 
+# TODO: must check matlab instances running before instancing new one
+print(os.system('cmd /c "tasklist /FI "imagename eq matlab.exe" /fo table /nh"'))
+
 matlab = MatlabInterface()
+# TODO: then once new instance running, save PID for identifying with python "session"
 matlab.run_script('checkStart')
 
 
@@ -67,7 +71,7 @@ def run_script(script: str, jsonResponse: Optional[bool] = False):
     return {"result": result}
 
 
-@app.post("/getJSON")
+@app.get("/getJSON")
 def getJSON(fileName: str):
     with open('D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\db\\json\\'+fileName, 'r') as f:
         res = f.read()
@@ -75,14 +79,15 @@ def getJSON(fileName: str):
     return {"result": jsonRes,
             "length": len(jsonRes)}
 
-# TODO: check if /music same length as metadata.json
 
-
-@app.post("/shouldUpdate")
+@app.get("/shouldUpdate")
 def should_update():
     DIR = 'D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\music'
     size = len([name for name in os.listdir(DIR)
                if os.path.isfile(os.path.join(DIR, name))])
+    filenames = [name for name in os.listdir(DIR)
+                 if os.path.isfile(os.path.join(DIR, name))]
+    print(filenames)
     res = getJSON('metadata.json').get('length') != size
     return res
 
@@ -95,8 +100,8 @@ def add_tracks():
 
 @app.post("/test_shazam")
 def test_shazam(duration: Optional[int] = 3, wipe: Optional[bool] = False):
-    if wipe:
-        print('Wipe selected. Adding tracks...')
+    if wipe | should_update():
+        print('Adding tracks...')
         add_tracks()
 
     command = "test_shazam {} {}".format(duration, 0)
