@@ -6,41 +6,42 @@ from pydantic import BaseModel
 
 from matlab_interface import MatlabInterface
 
+
+from service import Service
+
 import json
 import os
 import os.path
-import subprocess
 
 app = FastAPI()
-
+service = Service()
 # TODO: must check matlab instances running before instancing new one
-
 
 matlab = MatlabInterface()
 # TODO: then once new instance running, save PID for identifying with python "session"
+# TODO: to identify your own matlab session,
+# matlab PID from python command must match matlab PID from matlab command
 matlab.run_script('checkStart')
 
 
 @app.get("/taskList")
 def tasklist():
-    taskList = subprocess.check_output(
-        'tasklist /FI "imagename eq matlab.exe" /fo table /nh', shell=True)
-
-    print(taskList)
-    return {"result": taskList}
+    response = service.taskList()
+    # print(response)
+    return response
 
 
-@app.get("/")
+@ app.get("/")
 def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/setPath")
+@ app.get("/setPath")
 def restart_matlab():
     return {"result": matlab.run_command('cd \'D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\\'')}
 
 
-@app.get("/stopMatlab")
+@ app.get("/stopMatlab")
 def stop_matlab():
     if matlab:
         return {matlab.stop()}
@@ -48,7 +49,7 @@ def stop_matlab():
         return {"already stopped"}
 
 
-@app.post("/runCommands")
+@ app.post("/runCommands")
 def run_command(commands: str, jsonResponse: Optional[bool] = False):
 
     res = matlab.run_command(commands)
@@ -71,7 +72,7 @@ def run_command(commands: str, jsonResponse: Optional[bool] = False):
 #     return {"result": result}
 
 
-@app.post("/runScript")
+@ app.post("/runScript")
 def run_script(script: str, jsonResponse: Optional[bool] = False):
     res = matlab.run_script(script)
     if(jsonResponse):
@@ -81,7 +82,7 @@ def run_script(script: str, jsonResponse: Optional[bool] = False):
     return {"result": result}
 
 
-@app.get("/getJSON")
+@ app.get("/getJSON")
 def getJSON(fileName: str):
     with open('D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\db\\json\\'+fileName, 'r') as f:
         res = f.read()
@@ -90,7 +91,7 @@ def getJSON(fileName: str):
             "length": len(jsonRes)}
 
 
-@app.get("/shouldUpdate")
+@ app.get("/shouldUpdate")
 def should_update():
     DIR = 'D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\music'
     size = len([name for name in os.listdir(DIR)
@@ -102,13 +103,13 @@ def should_update():
     return res
 
 
-@app.post("/addTracks")
+@ app.post("/addTracks")
 def add_tracks():
     res = matlab.run_script('justAddTracks')
     return {"result": json.loads(res)}
 
 
-@app.post("/test_shazam")
+@ app.post("/test_shazam")
 def test_shazam(duration: Optional[int] = 3, wipe: Optional[bool] = False):
     if wipe | should_update():
         print('Adding tracks...')
