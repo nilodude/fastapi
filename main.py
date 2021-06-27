@@ -124,20 +124,24 @@ def stop_matlab(sid: int, restart: Optional[bool] = False):
 @app.post("/run")
 def run(sid: int, commands: str, script: Optional[bool] = False):
     session = getSession(sid)
+    figures = []
     if hasattr(session, 'matlab') & (session.pid is not None):
         res = session.matlab.run_script(
             commands) if script else session.matlab.run_command(commands)
         print(res)
-        res = res if isinstance(res, list) else res.replace(
-            '\r', '').replace('\n', '')
+        figures = session.matlab.run_command('figures')
+        figures = figures.replace('\r', '').replace('\n', '')
         try:
             result = json.loads(res, strict=False)
         except:
             result = res
-
+        try:
+            figures = json.loads(figures)
+        except:
+            figures = figures
     else:
         result = 'Session '+str(sid) + ' is not currently running!'
-    return {"result": result}
+    return {"result": result, "figures": figures}
 
 
 @app.get("/getJSON")

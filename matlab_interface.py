@@ -65,13 +65,13 @@ class MatlabInterface:
                 newList = [error.replace('\n', '') for error in errList]
                 return list(filter(None, newList))
 
-    def run_command(self, script_path):
+    def run_command(self, command):
         if not import_fail:
             try:
-                print("Running Command: {}".format(script_path))
+                print("Running Command: {}".format(command))
                 stream = StringIO()
                 err_stream = StringIO()
-                self.eng.eval(script_path, nargout=0,
+                self.eng.eval(command, nargout=0,
                               stdout=stream, stderr=err_stream)
                 return stream.getvalue().replace('ans =', '').strip()
             except MatlabTerminated:
