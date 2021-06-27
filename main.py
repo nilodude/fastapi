@@ -153,7 +153,7 @@ def should_update():
 
     importedFiles = getJSON('metadata.json')
 
-    sameSize = len(fileNames) == len(importedFiles)
+    sameSize = len(fileNames) <= len(importedFiles)
     if sameSize:
         for f in fileNames:
             print(f)
@@ -169,9 +169,14 @@ def should_update():
 
 
 @app.post("/addTracks")
-def add_tracks():
-    res = session.matlab.run_script('justAddTracks')
-    return {"result": json.loads(res)}
+def add_tracks(sid: int):
+    session = getSession(sid)
+    if hasattr(session, 'matlab') & (session.pid is not None):
+        res = session.matlab.run_script('justAddTracks')
+        result = json.loads(res)
+    else:
+        result = 'Session '+str(sid) + ' is not currently running!'
+    return result
 
 
 @app.post("/test_shazam")
