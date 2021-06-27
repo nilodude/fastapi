@@ -15,16 +15,15 @@ service = Service()
 sessions = [Session(i) for i in range(1, MAX_SESSIONS+1)]
 
 
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+
 def getSession(sid: int):
     availables = list(
         filter(lambda s:  s.sid == sid, sessions))
     return availables[0] if len(availables) > 0 else None
-
-
-# TODO: must check matlab instances running before instancing new one
-# TODO: then once new instance running, save PID for identifying with python "session"
-# TODO: to identify your own matlab session,
-# matlab PID from python command must match matlab PID from matlab command
 
 
 @app.get("/newSession")
@@ -99,31 +98,7 @@ def startMatlab(sid: int):
 @app.get("/taskList")
 def tasklist():
     tasks = service.taskList()
-    response = [json.loads(json.dumps(task.__dict__))
-                for task in tasks]
-    return response
-
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/restartSession")
-def restart_matlab(sid: int):
-    print('Session '+str(sid)+' Restart Selected')
-    session = getSession(sid)
-    if hasattr(session, 'matlab'):
-        session.matlab.stop()
-        session.pid = None
-        session.matlabPID = None
-        session.matlab = None
-        response = startMatlab(session.sid)
-    else:
-        msg = 'Session '+str(sid) + ' is not currently running!'
-        response = {"result": msg}
-        print(msg)
-    return response
+    return service.toJSON(tasks)
 
 
 @app.get("/stopMatlab")
@@ -145,11 +120,12 @@ def stop_matlab(sid: int, restart: Optional[bool] = False):
     return response
 
 
-@app.post("/runCommands")
-def run_command(sid: int, commands: str, jsonResponse: Optional[bool] = False):
+@app.post("/run")
+def run(sid: int, commands: str, script: Optional[bool] = False, jsonResponse: Optional[bool] = False):
     session = getSession(sid)
     if hasattr(session, 'matlab') & (session.pid is not None):
-        res = session.matlab.run_command(commands)
+        res = session.matlab.run_script(
+            commands) if script else session.matlab.run_command(commands)
         print(res)
         if(jsonResponse):
             result = json.loads(res)
@@ -160,46 +136,36 @@ def run_command(sid: int, commands: str, jsonResponse: Optional[bool] = False):
     return {"result": result}
 
 
-# @app.post("/runCommand2")
-# def run_command2(commands: str, jsonResponse: Optional[bool] = False):
-#     res = matlab2.run_command(commands)
-#     print(res)
-#     if(jsonResponse):
-#         result = json.loads(res)
-#     else:
-#         result = res
-#     return {"result": result}
-
-
-@app.post("/runScript")
-def run_script(script: str, jsonResponse: Optional[bool] = False):
-    res = session.matlab.run_script(script)
-    if(jsonResponse):
-        result = json.loads(res)
-    else:
-        result = res
-    return {"result": result}
-
-
 @app.get("/getJSON")
 def getJSON(fileName: str):
     with open('D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\db\\json\\'+fileName, 'r') as f:
         res = f.read()
     jsonRes = json.loads(res, strict=False)
-    return {"result": jsonRes,
-            "length": len(jsonRes)}
+    return jsonRes
 
 
 @app.get("/shouldUpdate")
 def should_update():
+    shouldUpdate = True
     DIR = 'D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\music'
-    size = len([name for name in os.listdir(DIR)
-               if os.path.isfile(os.path.join(DIR, name))])
-    filenames = [name for name in os.listdir(DIR)
+    fileNames = [name for name in os.listdir(DIR)
                  if os.path.isfile(os.path.join(DIR, name))]
-    print(filenames)
-    res = getJSON('metadata.json').get('length') != size
-    return res
+
+    importedFiles = getJSON('metadata.json')
+
+    sameSize = len(fileNames) == len(importedFiles)
+    if sameSize:
+        for f in fileNames:
+            print(f)
+            found = list(filter(lambda i: f in i['Filename'], importedFiles))
+            print(found)
+            if len(found) > 0:
+                shouldUpdate = False
+            else:
+                shouldUpdate = True
+                break
+
+    return shouldUpdate
 
 
 @app.post("/addTracks")
