@@ -65,10 +65,11 @@ class MatlabInterface:
                 newList = [error.replace('\n', '') for error in errList]
                 return list(filter(None, newList))
 
-    def run_command(self, command):
+    def run_command(self, command, verbose):
         if not import_fail:
             try:
-                print("Running Command: {}".format(command))
+                if verbose:
+                    print("Running Command: {}".format(command))
                 stream = StringIO()
                 err_stream = StringIO()
                 self.eng.eval(command, nargout=0,

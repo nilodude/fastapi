@@ -44,8 +44,10 @@ def newSession():
         tasks = service.taskList()
 
         s.pid = tasks[0].pid
-        s.matlabPID = s.matlab.run_command("feature('getpid')")
+        s.matlabPID = s.matlab.run_command("feature('getpid')", False)
+        s.matlab.clear()
         message = 'New Matlab process with PID='+s.pid
+
         sessions.insert(index, s)
 
         service.printS('Updated Sessions: '+message, sessions)
@@ -80,7 +82,8 @@ def startMatlab(sid: int):
         tasks = service.taskList()
 
         s.pid = tasks[0].pid
-        s.matlabPID = s.matlab.run_command("feature('getpid')")
+        s.matlabPID = s.matlab.run_command("feature('getpid')", False)
+        s.matlab.run_command('clear', False)
         message = 'New Matlab process with PID='+s.pid
         sessions.insert(index, s)
 
@@ -129,7 +132,8 @@ def run(sid: int, commands: str, script: Optional[bool] = False):
         res = session.matlab.run_script(
             commands) if script else session.matlab.run_command(commands)
         print(res)
-        figures = session.matlab.run_command('figures')
+        figures = session.matlab.run_command('figures', False)
+        session.matlab.run_command('clear g numFigures', False)
         figures = figures.replace('\r', '').replace('\n', '')
         try:
             result = json.loads(res, strict=False)
@@ -193,6 +197,6 @@ def test_shazam(duration: Optional[int] = 3, wipe: Optional[bool] = False):
         add_tracks()
 
     command = "test_shazam {} {}".format(duration, 0)
-    result = session.matlab.run_command(command)
+    result = session.matlab.run_command(command, True)
     print(json.loads(result))
     return {"result": json.loads(result)}
