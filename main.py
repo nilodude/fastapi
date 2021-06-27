@@ -14,6 +14,13 @@ app = FastAPI()
 service = Service()
 sessions = [Session(i) for i in range(1, MAX_SESSIONS+1)]
 
+
+def getSession(sid: int):
+    availables = list(
+        filter(lambda s:  s.sid == sid, sessions))
+    return availables[0] if len(availables) > 0 else None
+
+
 # TODO: must check matlab instances running before instancing new one
 # TODO: then once new instance running, save PID for identifying with python "session"
 # TODO: to identify your own matlab session,
@@ -58,14 +65,13 @@ def getSessions():
 @app.get("/startMatlab")
 def startMatlab(sid: int):
     response = None
-# s.pid is None and
-    availables = list(
-        filter(lambda s:  s.sid == sid, sessions))
-    isItAvailable = (len(availables) > 0) & (availables[0].pid is None)
+    s = getSession(sid)
+
+    isItAvailable = (s is not None) & (s.pid is None)
 
     if isItAvailable:
-        service.printS('Selected Session:', availables)
-        s = availables[0]
+        service.printS('Selected Session:', [s])
+        # s = availables[0]
         index = sessions.index(s)
         sessions.pop(index)
         print('Initializing Matlab Session '+str(sid)+'...')
@@ -84,8 +90,9 @@ def startMatlab(sid: int):
     else:
         message = 'Session ' + \
             str(sid)+' not available, already running PID=' + \
-            str(availables[0].pid)
+            str(s.pid)
         response = {"result": message}
+        print(message)
 
     return response
 
@@ -103,17 +110,40 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/setPath")
-def restart_matlab():
-    return {"result": session.matlab.run_command('cd \'D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\\'')}
+@app.get("/restartSession")
+def restart_matlab(sid: int):
+    print('Session '+str(sid)+' Restart Selected')
+    session = getSession(sid)
+    if hasattr(session, 'matlab'):
+        session.matlab.stop()
+        session.pid = None
+        session.matlabPID = None
+        session.matlab = None
+        response = startMatlab(session.sid)
+    else:
+        msg = 'Session '+str(sid) + ' is not currently running!'
+        response = {"result": msg}
+        print(msg)
+    return response
 
 
 @app.get("/stopMatlab")
-def stop_matlab():
-    if session.matlab:
-        return {session.matlab.stop()}
+def stop_matlab(sid: int, restart: Optional[bool] = False):
+    option = ' Restart ' if restart else ' Stop '
+    print('Session '+str(sid)+option+'Selected')
+    session = getSession(sid)
+    if hasattr(session, 'matlab') & (session.pid is not None):
+        session.matlab.stop()
+        session.pid = None
+        session.matlabPID = None
+        session.matlab = None
+        msg = 'Session '+str(sid) + ' stopped'
+        response = startMatlab(session.sid) if restart else {"result": msg}
     else:
-        return {"already stopped"}
+        msg = 'Session '+str(sid) + ' is not currently running!'
+        response = {"result": msg}
+        print(msg)
+    return response
 
 
 @app.post("/runCommands")
