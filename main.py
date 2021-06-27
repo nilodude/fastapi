@@ -122,17 +122,19 @@ def stop_matlab(sid: int, restart: Optional[bool] = False):
 
 
 @app.post("/run")
-def run(sid: int, commands: str, script: Optional[bool] = False, jsonResponse: Optional[bool] = False):
+def run(sid: int, commands: str, script: Optional[bool] = False):
     session = getSession(sid)
     if hasattr(session, 'matlab') & (session.pid is not None):
         res = session.matlab.run_script(
             commands) if script else session.matlab.run_command(commands)
-        res = res.replace('\r', '')
         print(res)
-        if(jsonResponse):
+        res = res if isinstance(res, list) else res.replace(
+            '\r', '').replace('\n', '')
+        try:
             result = json.loads(res, strict=False)
-        else:
+        except:
             result = res
+
     else:
         result = 'Session '+str(sid) + ' is not currently running!'
     return {"result": result}
