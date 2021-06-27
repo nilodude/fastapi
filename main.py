@@ -71,7 +71,6 @@ def startMatlab(sid: int):
 
     if isItAvailable:
         service.printS('Selected Session:', [s])
-        # s = availables[0]
         index = sessions.index(s)
         sessions.pop(index)
         print('Initializing Matlab Session '+str(sid)+'...')
@@ -147,14 +146,17 @@ def stop_matlab(sid: int, restart: Optional[bool] = False):
 
 
 @app.post("/runCommands")
-def run_command(commands: str, jsonResponse: Optional[bool] = False):
-
-    res = session.matlab.run_command(commands)
-    print(res)
-    if(jsonResponse):
-        result = json.loads(res)
+def run_command(sid: int, commands: str, jsonResponse: Optional[bool] = False):
+    session = getSession(sid)
+    if hasattr(session, 'matlab') & (session.pid is not None):
+        res = session.matlab.run_command(commands)
+        print(res)
+        if(jsonResponse):
+            result = json.loads(res)
+        else:
+            result = res
     else:
-        result = res
+        result = 'Session '+str(sid) + ' is not currently running!'
     return {"result": result}
 
 
