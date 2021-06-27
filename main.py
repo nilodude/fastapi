@@ -130,7 +130,7 @@ def run(sid: int, commands: str, script: Optional[bool] = False):
     figures = []
     if hasattr(session, 'matlab') & (session.pid is not None):
         res = session.matlab.run_script(
-            commands) if script else session.matlab.run_command(commands)
+            commands) if script else session.matlab.run_command(commands, True)
         print(res)
         figures = session.matlab.run_command('figures', False)
         session.matlab.run_command('clear g numFigures', False)

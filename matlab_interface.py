@@ -83,7 +83,6 @@ class MatlabInterface:
                               stdout=stream, stderr=err_stream)
                 return "Matlab restarted OK"
             except:  # The other exceptions are handled by Matlab
-                # return (stream.getvalue() + "\n" + err_stream.getvalue() + "\n")
                 errList = err_stream.getvalue().split('\n\n')
                 newList = [error.replace('\n', '') for error in errList]
                 return list(filter(None, newList))
