@@ -10,6 +10,7 @@ import os
 import os.path
 
 MAX_SESSIONS = 3
+HOME = 'D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\'
 app = FastAPI()
 service = Service()
 sessions = [Session(i) for i in range(1, MAX_SESSIONS+1)]
@@ -138,7 +139,7 @@ def run(sid: int, commands: str, script: Optional[bool] = False, jsonResponse: O
 
 @app.get("/getJSON")
 def getJSON(fileName: str):
-    with open('D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\db\\json\\'+fileName, 'r') as f:
+    with open(HOME+'db\\json\\'+fileName, 'r') as f:
         res = f.read()
     jsonRes = json.loads(res, strict=False)
     return jsonRes
@@ -147,9 +148,9 @@ def getJSON(fileName: str):
 @app.get("/shouldUpdate")
 def should_update():
     shouldUpdate = True
-    DIR = 'D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\music'
-    fileNames = [name for name in os.listdir(DIR)
-                 if os.path.isfile(os.path.join(DIR, name))]
+    musicDir = HOME+'music'
+    fileNames = [filename for filename in os.listdir(musicDir)
+                 if os.path.isfile(os.path.join(musicDir, filename))]
 
     importedFiles = getJSON('metadata.json')
     sameSize = len(fileNames) <= len(importedFiles)
