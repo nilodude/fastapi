@@ -47,7 +47,7 @@ class MatlabInterface:
     def run_script(self, script_path):
         if not import_fail:
             try:
-                print("Running: {}".format(script_path))
+                print("Running Script: {}".format(script_path))
                 stream = StringIO()
                 err_stream = StringIO()
                 self.eng.run(script_path, nargout=0,
@@ -68,7 +68,7 @@ class MatlabInterface:
     def run_command(self, script_path):
         if not import_fail:
             try:
-                print("Running: {}".format(script_path))
+                print("Running Command: {}".format(script_path))
                 stream = StringIO()
                 err_stream = StringIO()
                 self.eng.eval(script_path, nargout=0,
