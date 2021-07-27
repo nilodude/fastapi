@@ -1,11 +1,14 @@
 {
   "folders": [
-	{
-		"path": "."
-	},
-	{
-		"path": "..\\Shazam-MATLAB\\app"
-	}
-],
+    {
+      "path": "."
+    },
+    {
+      "path": "..\\Shazam-MATLAB\\app"
+    },
+    {
+      "path": "..\\front"
+    }
+  ],
   "settings": {}
 }

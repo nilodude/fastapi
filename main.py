@@ -4,14 +4,29 @@ from pydantic import BaseModel
 from matlab_interface import MatlabInterface
 from service import Service
 from session import Session
+from fastapi.middleware.cors import CORSMiddleware
 
 import json
 import os
 import os.path
 
+app = FastAPI()
+
+origins = [
+    "http://localhost:4200",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 MAX_SESSIONS = 3
 HOME = 'D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\'
-app = FastAPI()
+
 service = Service()
 sessions = [Session(i) for i in range(1, MAX_SESSIONS+1)]
 
@@ -124,7 +139,7 @@ def stop_matlab(sid: int, restart: Optional[bool] = False):
     return response
 
 
-@app.post("/run")
+@app.get("/run")
 def run(sid: int, commands: str, script: Optional[bool] = False):
     session = getSession(sid)
     figures = []
