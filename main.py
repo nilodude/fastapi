@@ -57,9 +57,7 @@ def newSession():
         s.matlab.run_script('checkStart')
 
         tasks = service.taskList()
-
-        s.pid = tasks[0].pid
-        s.matlabPID = s.matlab.run_command("feature('getpid')", False)
+        s.pid = s.matlab.run_command("feature('getpid')", False)
         s.matlab.clear()
         message = 'New Matlab process with PID='+s.pid
 
@@ -144,6 +142,7 @@ def run(sid: int, commands: str, script: Optional[bool] = False):
     session = getSession(sid)
     figures = []
     if hasattr(session, 'matlab') & (session.pid is not None):
+        print('Session '+str(sid)+': ')
         res = session.matlab.run_script(
             commands) if script else session.matlab.run_command(commands, True)
         print(res)
