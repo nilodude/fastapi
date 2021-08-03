@@ -145,16 +145,19 @@ def run(sid: int, commands: str, script: Optional[bool] = False):
         print('Session '+str(sid)+': ')
         res = session.matlab.run_script(
             commands) if script else session.matlab.run_command(commands, True)
-        print(res)
+        
         figures = session.matlab.run_command('figures', False)
         session.matlab.run_command('clear g numFigures', False)
-        figures = figures.replace('\r', '').replace('\n', '')
+        
+        figures = figures.replace('\r', '').replace('\n', '').replace('\\','')
         try:
             result = json.loads(res, strict=False)
+            print(res)
         except:
             result = res
         try:
-            figures = json.loads(figures)
+            figures = json.loads(figures, strict=False)
+            print(figures)
         except:
             figures = figures
     else:
