@@ -149,15 +149,15 @@ def run(sid: int, commands: str, script: Optional[bool] = False):
         figures = session.matlab.run_command('figures', False)
         session.matlab.run_command('clear g numFigures', False)
         
-        figures = figures.replace('\r', '').replace('\n', '').replace('\\','')
+        figures = figures.replace('\r', '').replace('\n', '')
         try:
             result = json.loads(res, strict=False)
-            print(res)
+            # print(res)
         except:
             result = res
         try:
             figures = json.loads(figures, strict=False)
-            print(figures)
+            # print(figures)
         except:
             figures = figures
     else:
