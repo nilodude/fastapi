@@ -147,8 +147,6 @@ def run(sid: int, commands: str, script: Optional[bool] = False):
             commands) if script else session.matlab.run_command(commands, True)
         
         figures = session.matlab.run_command('figures', False)
-        session.matlab.run_command('clear g numFigures', False)
-        
         figures = figures.replace('\r', '').replace('\n', '')
         try:
             result = json.loads(res, strict=False)
