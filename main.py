@@ -54,11 +54,8 @@ def newSession():
         sessions.pop(index)
         print('Initializing Matlab Session '+str(s.sid)+'...')
         s.matlab = MatlabInterface()
-        s.matlab.run_script('checkStart')
-
-        tasks = service.taskList()
-        s.pid = s.matlab.run_command("feature('getpid')", False)
-        s.matlab.clear()
+        s.matlab.run_command('checkStart',False)
+        s.pid = s.matlab.run_command("clear,feature('getpid')", False)
         message = 'New Matlab process with PID='+s.pid
 
         sessions.insert(index, s)
@@ -91,11 +88,7 @@ def startMatlab(sid: int):
         print('Initializing Matlab Session '+str(sid)+'...')
         s.matlab = MatlabInterface()
         s.matlab.run_script('checkStart')
-
-        tasks = service.taskList()
-
-        s.pid = tasks[0].pid
-        s.matlabPID = s.matlab.run_command("feature('getpid')", False)
+        s.pid = s.matlab.run_command("clear,feature('getpid')", False)
         s.matlab.run_command('clear', False)
         message = 'New Matlab process with PID='+s.pid
         sessions.insert(index, s)
@@ -138,24 +131,21 @@ def stop_matlab(sid: int, restart: Optional[bool] = False):
 
 
 @app.get("/run")
-def run(sid: int, commands: str, script: Optional[bool] = False):
+def run(sid: int, commands: str):
     session = getSession(sid)
     figures = []
     if hasattr(session, 'matlab') & (session.pid is not None):
         print('Session '+str(sid)+': ')
-        res = session.matlab.run_script(
-            commands) if script else session.matlab.run_command(commands, True)
+        res = session.matlab.run_command(commands, True)
         
         figures = session.matlab.run_command('figures', False)
         figures = figures.replace('\r', '').replace('\n', '')
         try:
             result = json.loads(res, strict=False)
-            # print(res)
         except:
             result = res
         try:
             figures = json.loads(figures, strict=False)
-            # print(figures)
         except:
             figures = figures
     else:

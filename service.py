@@ -33,5 +33,5 @@ class Service:
                 response.append(json.loads(json.dumps(vars(s))))
             else:
                 response.append({
-                    "pid": s.pid, "sid": s.sid, "matlabPID": s.matlabPID})
+                    "pid": s.pid, "sid": s.sid})
         return response
