@@ -6,7 +6,6 @@ from service import Service
 
 service = Service()
 
-
 class Session:
     sid = None
     matlab: MatlabInterface

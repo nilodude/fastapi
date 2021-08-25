@@ -4,7 +4,7 @@ import subprocess
 from task import Task
 
 
-class Service:
+class Utils:
 
     def taskList(self):
         output = subprocess.run(
@@ -15,10 +15,6 @@ class Service:
             output = output.decode('utf-8')
             taskList = list(filter(None, output.split('\r\n')))
             tasks = [Task(task) for task in taskList]
-
-            if len(tasks) > 1:
-                tasks.sort(key=lambda x: x.cpuTime, reverse=False)
-            # print(self.toJSON(tasks))
         return tasks
 
     def printS(self, title, sessions):

@@ -2,7 +2,7 @@ from typing import Optional
 from fastapi import FastAPI
 from pydantic import BaseModel
 from matlab_interface import MatlabInterface
-from service import Service
+from utils import Utils
 from session import Session
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -27,7 +27,7 @@ app.add_middleware(
 MAX_SESSIONS = 3
 HOME = 'D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\'
 
-service = Service()
+utils = Utils()
 sessions = [Session(i) for i in range(1, MAX_SESSIONS+1)]
 
 
@@ -48,7 +48,7 @@ def newSession():
     itsNotFull = len(availables) > 0
 
     if itsNotFull:
-        service.printS('Available Sessions:', availables)
+        utils.printS('Available Sessions:', availables)
         s = availables[0]
         index = sessions.index(s)
         sessions.pop(index)
@@ -60,7 +60,7 @@ def newSession():
 
         sessions.insert(index, s)
 
-        service.printS('Updated Sessions: '+message, sessions)
+        utils.printS('Updated Sessions: '+message, sessions)
         response = {"result": message, "session": s.toJSON()}
     else:
         message = 'No available sessions'
@@ -82,7 +82,7 @@ def startMatlab(sid: int):
     isItAvailable = (s is not None) & (s.pid is None)
 
     if isItAvailable:
-        service.printS('Selected Session:', [s])
+        utils.printS('Selected Session:', [s])
         index = sessions.index(s)
         sessions.pop(index)
         print('Initializing Matlab Session '+str(sid)+'...')
@@ -93,22 +93,19 @@ def startMatlab(sid: int):
         message = 'New Matlab process with PID='+s.pid
         sessions.insert(index, s)
 
-        service.printS('Updated Sessions: '+message, sessions)
+        utils.printS('Updated Sessions: '+message, sessions)
         response = {"result": message, "session": s.toJSON()}
     else:
-        message = 'Session ' + \
-            str(sid)+' not available, already running PID=' + \
-            str(s.pid)
+        message = 'Session ' + str(sid)+' not available, already running PID=' + str(s.pid)
         response = {"result": message}
         print(message)
-
     return response
 
 
 @app.get("/taskList")
 def tasklist():
-    tasks = service.taskList()
-    return service.toJSON(tasks)
+    tasks = utils.taskList()
+    return utils.toJSON(tasks)
 
 
 @app.get("/stopMatlab")
