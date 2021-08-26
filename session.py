@@ -1,10 +1,6 @@
 import json
 import os
-import subprocess
 from matlab_interface import MatlabInterface
-from service import Service
-
-service = Service()
 
 class Session:
     sid = None

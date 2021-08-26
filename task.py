@@ -4,11 +4,6 @@ import os
 class Task:
     imageName: str
     pid: int
-    sessionName: str
-    sessionNum: int
-    memory: str
-    status: str
-    userName: str
     cpuTime: int
     windowName: str
 

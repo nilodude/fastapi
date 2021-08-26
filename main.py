@@ -54,7 +54,7 @@ def newSession():
         sessions.pop(index)
         print('Initializing Matlab Session '+str(s.sid)+'...')
         s.matlab = MatlabInterface()
-        s.matlab.run_command('checkStart',False)
+        # s.matlab.run_command('checkStart',False)
         s.pid = s.matlab.run_command("clear,feature('getpid')", False)
         message = 'New Matlab process with PID='+s.pid
 
@@ -87,7 +87,7 @@ def startMatlab(sid: int):
         sessions.pop(index)
         print('Initializing Matlab Session '+str(sid)+'...')
         s.matlab = MatlabInterface()
-        s.matlab.run_script('checkStart')
+        # s.matlab.run_script('checkStart')
         s.pid = s.matlab.run_command("clear,feature('getpid')", False)
         s.matlab.run_command('clear', False)
         message = 'New Matlab process with PID='+s.pid
@@ -136,7 +136,10 @@ def run(sid: int, commands: str):
         res = session.matlab.run_command(commands, True)
         
         figures = session.matlab.run_command('figures', False)
-        figures = figures.replace('\r', '').replace('\n', '')
+        try:
+            figures = figures.replace('\r', '').replace('\n', '')
+        except:
+            figures = figures
         try:
             result = json.loads(res, strict=False)
         except:
