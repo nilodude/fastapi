@@ -10,7 +10,18 @@ import json
 import os
 import os.path
 
-app = FastAPI()
+tags_metadata = [
+    {
+        "name": "main",
+        "description": "Operations needed for the main application",
+    },
+    {
+        "name": "extra",
+        "description": "",
+    }
+]
+
+app = FastAPI(title="Matlab Online Workspace API")
 
 origins = [
     "http://localhost:4200",
@@ -33,7 +44,7 @@ sessions = [Session(i) for i in range(1, MAX_SESSIONS+1)]
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"Add /docs to URL to acces Matlab Online Workspace API"}
 
 
 def getSession(sid: int):
@@ -42,7 +53,18 @@ def getSession(sid: int):
     return availables[0] if len(availables) > 0 else None
 
 
-@app.get("/newSession")
+@app.get("/sessions", tags=["main"])
+def getSessions():
+    return {"sessions": [s.toJSON() for s in sessions]}
+
+
+@app.get("/taskList", tags=["main"])
+def tasklist():
+    tasks = utils.taskList()
+    return utils.toJSON(tasks)
+
+
+@app.get("/newSession", tags=["main"])
 def newSession():
     availables = list(filter(lambda s: s.pid is None, sessions))
     itsNotFull = len(availables) > 0
@@ -69,12 +91,7 @@ def newSession():
     return response
 
 
-@app.get("/sessions")
-def getSessions():
-    return {"sessions": [s.toJSON() for s in sessions]}
-
-
-@app.get("/startMatlab")
+@app.get("/startMatlab", tags=["main"])
 def startMatlab(sid: int):
     response = None
     s = getSession(sid)
@@ -102,14 +119,8 @@ def startMatlab(sid: int):
     return response
 
 
-@app.get("/taskList")
-def tasklist():
-    tasks = utils.taskList()
-    return utils.toJSON(tasks)
-
-
-@app.get("/stopMatlab")
-def stop_matlab(sid: int, restart: Optional[bool] = False):
+@app.get("/stopMatlab", tags=["main"])
+def stopMatlab(sid: int, restart: Optional[bool] = False):
     option = ' Restart ' if restart else ' Stop '
     print('Session '+str(sid)+option+'Selected')
     session = getSession(sid)
@@ -127,7 +138,7 @@ def stop_matlab(sid: int, restart: Optional[bool] = False):
     return response
 
 
-@app.get("/run")
+@app.get("/run", tags=["main"])
 def run(sid: int, commands: str):
     session = getSession(sid)
     figures = []
@@ -153,7 +164,7 @@ def run(sid: int, commands: str):
     return {"result": result, "figures": figures}
 
 
-@app.get("/getJSON")
+@app.get("/getJSON", tags=["extra"])
 def getJSON(fileName: str):
     with open(HOME+'db\\json\\'+fileName, 'r') as f:
         res = f.read()
@@ -161,7 +172,7 @@ def getJSON(fileName: str):
     return jsonRes
 
 
-@app.get("/shouldUpdate")
+@app.get("/shouldUpdate", tags=["extra"])
 def should_update():
     shouldUpdate = True
     musicDir = HOME+'music'
@@ -183,7 +194,7 @@ def should_update():
     return shouldUpdate
 
 
-@app.post("/addTracks")
+@app.post("/addTracks", tags=["extra"])
 def add_tracks(sid: int):
     session = getSession(sid)
     if hasattr(session, 'matlab') & (session.pid is not None):
@@ -195,7 +206,7 @@ def add_tracks(sid: int):
     return {"result": result}
 
 
-@app.post("/test_shazam")
+@app.post("/test_shazam", tags=["extra"])
 def test_shazam(duration: Optional[int] = 3, wipe: Optional[bool] = False):
     if wipe | should_update():
         print('Adding tracks...')
