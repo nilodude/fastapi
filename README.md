@@ -5,11 +5,11 @@
 #### You will need:
 1. Windows 10
 2. MATLAB installation
-3. Pyhton3.8+
-4. FastAPI + Uvicorn
+3. [Pyhton3.8+](https://www.python.org/downloads/release/python-380/)
+4. [FastAPI + Uvicorn](https://fastapi.tiangolo.com/)
 
 Download the zip and run `uvicorn main:app` in the root directory.
-
+Once deployed successfully visit localhost:8000/docs.
 
 > Trabajo Fin de Grado. Grado en Ingeniería de las Tecnologías de Telecomunicación.
 >
