@@ -51,8 +51,6 @@ class MatlabInterface:
                 print(stream.getvalue(), err_stream.getvalue(), sep="\n")
                 print("Matlab terminated. Restarting the engine...")
                 self.eng = matlab.engine.start_matlab()
-                self.eng.eval('cd \'D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\\'', nargout=0,
-                              stdout=stream, stderr=err_stream)
                 return "Matlab restarted OK"
             except:  # The other exceptions are handled by Matlab
                 errList = err_stream.getvalue().split('\n\n')

@@ -76,18 +76,15 @@ def newSession():
         sessions.pop(index)
         print('Initializing Matlab Session '+str(s.sid)+'...')
         s.matlab = MatlabInterface()
-        # s.matlab.run_command('checkStart',False)
         s.pid = s.matlab.run_command("clear,feature('getpid')", False)
+        s.matlab.run_command("clear,path(path,'D:\\Dropbox\\tfg\\Shazam-MATLAB\\app\\')", False)
         message = 'New Matlab process with PID='+s.pid
-
         sessions.insert(index, s)
-
         utils.printS('Updated Sessions: '+message, sessions)
         response = {"result": message, "session": s.toJSON()}
     else:
         message = 'No available sessions'
         response = {"result": message}
-
     return response
 
 
@@ -104,7 +101,7 @@ def startMatlab(sid: int):
         sessions.pop(index)
         print('Initializing Matlab Session '+str(sid)+'...')
         s.matlab = MatlabInterface()
-        # s.matlab.run_script('checkStart')
+        #s.matlab.run_command('checkStart')
         s.pid = s.matlab.run_command("clear,feature('getpid')", False)
         s.matlab.run_command('clear', False)
         message = 'New Matlab process with PID='+s.pid
@@ -145,7 +142,6 @@ def run(sid: int, commands: str):
     if hasattr(session, 'matlab') & (session.pid is not None):
         print('Session '+str(sid)+': ')
         res = session.matlab.run_command(commands, True)
-        
         figures = session.matlab.run_command('figures', False)
         try:
             figures = figures.replace('\r', '').replace('\n', '')
@@ -207,12 +203,17 @@ def add_tracks(sid: int):
 
 
 @app.post("/test_shazam", tags=["extra"])
-def test_shazam(duration: Optional[int] = 3, wipe: Optional[bool] = False):
-    if wipe | should_update():
-        print('Adding tracks...')
-        add_tracks()
+def test_shazam(sid: int, duration: Optional[int] = 3, wipe: Optional[bool] = False):
+    session = getSession(sid)
+    if hasattr(session, 'matlab') & (session.pid is not None):
+        if wipe | should_update():
+            print('Adding tracks...')
+            add_tracks(sid)
 
-    command = "test_shazam {} {}".format(duration, 0)
-    result = session.matlab.run_command(command, True)
-    print(json.loads(result))
+        command = "test_shazam {} {}".format(duration, 0)
+        result = session.matlab.run_command(command, True)
+        print(result)
+        print(json.loads(result))
+    else:
+        result = 'Session '+str(sid) + ' is not currently running!'
     return {"result": json.loads(result)}
