@@ -5,7 +5,7 @@
 #### You will need:
 1. Windows 10
 2. MATLAB installation
-3. [Pyhton3.8+](https://www.python.org/downloads/release/python-380/)
+3. [Pyhton3.6.1+](https://www.python.org/downloads/release/python-361/)
 4. [MATLAB Engine API for Python](https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html)
 5. [FastAPI + Uvicorn](https://fastapi.tiangolo.com/)
 
